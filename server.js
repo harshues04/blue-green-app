@@ -4,7 +4,7 @@ const port = 3000;
 
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Hello World! I have automated deployment',
+        message: 'Hello World! I have automated deployment through Jenkins CI/CD pipeline.',
         version: process.env.VERSION || 'v2.0',
         env: process.env.ENV || 'unknown'
     });
