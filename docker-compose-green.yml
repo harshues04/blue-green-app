@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  green:
+    image: harshues04/myapp:v1
+    container_name: green-app
+    ports:
+      - "9091:3000"
+    environment:
+      - VERSION=v1
+      - ENV=GREEN
+    networks:
+      - blue-green-net  # ← ADD THIS
+
+networks:
+  blue-green-net:
+    external: true    # ← ADD THIS
