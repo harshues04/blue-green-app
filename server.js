@@ -4,8 +4,8 @@ const port = 3000;
 
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Hello World!',
-        version: process.env.VERSION || 'v1.0',
+        message: 'Hello World! I have automated deployment',
+        version: process.env.VERSION || 'v2.0',
         env: process.env.ENV || 'unknown'
     });
 });
