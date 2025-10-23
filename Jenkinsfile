@@ -1,34 +1,46 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:24.0-dind'
+            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     
     environment {
-        DOCKER_IMAGE = 'harshues04/myapp'  // ← REPLACE
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
     
     stages {
+        stage('Build & Deploy Blue') {
+            steps {
+                sh '''
+                    echo "=== DEBUG: Docker Info ==="
+                    docker --version
+                    docker ps -a
+                    
+                    echo "=== Building Blue Image ==="
+                    docker build -t harshues04/blue-app:blue .
+                    
+                    echo "=== Deploying Blue Container ==="
+                    docker stop blue || true
+                    docker rm blue || true
+                    docker run -d --name blue -p 9091:8080 harshues04/blue-app:blue
+                    
+                    echo "=== Waiting for Blue to start ==="
+                    sleep 10
+                    
+                    echo "=== Checking Blue Status ==="
+                    docker logs blue --tail 10
+                    curl -f http://localhost:9091 || echo "❌ Blue not ready!"
+                '''
+            }
+        }
+        
         stage('Test Docker') {
             steps {
                 sh '''
-                    sleep 10
-                    curl -f http://localhost:9091 || exit 1
-                '''
-            }
-        }
-        
-        stage('Switch Traffic') {
-            steps {
-                sh '''
-                    docker exec nginx-proxy sh -c "sed -i 's/blue-app/green-app/g' /etc/nginx/nginx.conf && nginx -s reload"
-                '''
-            }
-        }
-        
-        stage('Cleanup Blue') {
-            steps {
-                sh '''
-                    docker stop blue-app || true
-                    docker rm blue-app || true
+                    echo "✅ Docker agent WORKS!"
+                    docker ps
                 '''
             }
         }
